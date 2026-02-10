@@ -1,0 +1,1 @@
+(()=>{"use strict";chrome.runtime.onMessage.addListener(function(e,d,o){var t=document.createElement("h1"),n=document.createTextNode("Please do this: ${msg}");t.appendChild(n),document.body.appendChild(t),o("looks good")})})();
