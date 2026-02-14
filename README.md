@@ -18,3 +18,12 @@ Comprehensive course on building a Chrome extension in plain JavaScript
 Progress:
 
 <img width="1276" height="755" alt="image" src="https://github.com/user-attachments/assets/0ce378fc-1093-45f8-befa-c9297b4908b8" />
+
+
+
+
+
+Progress: 13/2/2026
+
+<img width="1280" height="800" alt="image" src="https://github.com/user-attachments/assets/0d1b2a4f-759c-4dfe-bca1-d824bc8a7fea" />
+
