@@ -1,64 +1,56 @@
-
-
-
-
 (() => {
-  const LOG_PREFIX = "✅ ecoprompt";
+  const LOG = "✅ ecoprompt";
+  console.log(`${LOG} running (prompt detector loaded)`);
 
-  console.log(`${LOG_PREFIX} running (prompt detector loaded)`);
+  const getTextarea = () => document.querySelector("textarea");
 
-  function getTextarea() {
-    return document.querySelector("textarea");
-  }
+  const getPrompt = () => {
+    const t = getTextarea();
+    return t?.value?.trim() || "";
+  };
 
-  function attachTextareaListener() {
+  const logPrompt = (source) => {
+    const prompt = getPrompt();
+    console.log(`${LOG} ${source} prompt=`, prompt); // debug line
+    if (!prompt) return;
+    console.log(`🚀 PROMPT SUBMITTED (${source}):`, prompt);
+
+    // later:
+    // chrome.runtime.sendMessage({ type: "PROMPT_SUBMITTED", prompt });
+  };
+
+  function attach() {
     const textarea = getTextarea();
-    if (!textarea) return;
+    if (textarea && !textarea.dataset.ecopromptKeyAttached) {
+      textarea.dataset.ecopromptKeyAttached = "true";
+      console.log(`${LOG} attached listener to ChatGPT textarea`);
 
-    if (textarea.dataset.ecopromptAttached === "true") return;
-    textarea.dataset.ecopromptAttached = "true";
+      textarea.addEventListener("keydown", (e) => {
+        if (e.isComposing) return;
+        if (e.key === "Enter" && !e.shiftKey) {
+          // capture immediately before the app clears it
+          logPrompt("enter");
+        }
+      });
+    }
 
-    console.log(`${LOG_PREFIX} attached listener to ChatGPT textarea`);
-
-    textarea.addEventListener("keydown", (e) => {
-    
-      if (e.isComposing) return;
-      if (e.key === "Enter" && !e.shiftKey) {
-        const prompt = textarea.value?.trim();
-        if (!prompt) return;
-
-        console.log("🚀 PROMPT SUBMITTED (enter):", prompt);
-      }
-    });
-  }
-
-  function attachSendButtonListener() {
-    const btn =
+    const sendBtn =
       document.querySelector('button[aria-label*="Send"]') ||
       document.querySelector('button[aria-label*="Send message"]') ||
       document.querySelector('button[data-testid*="send"]');
 
-    if (!btn) return;
+    if (sendBtn && !sendBtn.dataset.ecopromptBtnAttached) {
+      sendBtn.dataset.ecopromptBtnAttached = "true";
+      console.log(`${LOG} attached listener to Send button`);
 
-    if (btn.dataset.ecopromptAttached === "true") return;
-    btn.dataset.ecopromptAttached = "true";
-
-    console.log(`${LOG_PREFIX} attached listener to Send button`);
-
-    btn.addEventListener("click", () => {
-      const textarea = getTextarea();
-      const prompt = textarea?.value?.trim();
-      if (!prompt) return;
-
-      console.log("🚀 PROMPT SUBMITTED (click):", prompt);
-    });
+      // pointerdown happens BEFORE click (so we catch text before it disappears)
+      sendBtn.addEventListener("pointerdown", () => logPrompt("pointerdown"), true);
+      sendBtn.addEventListener("mousedown", () => logPrompt("mousedown"), true);
+      sendBtn.addEventListener("click", () => logPrompt("click"), true);
+    }
   }
 
-  function attachAll() {
-    attachTextareaListener();
-    attachSendButtonListener();
-  }
-  attachAll();
-  const observer = new MutationObserver(attachAll);
-  observer.observe(document.body, { childList: true, subtree: true });
+  attach();
+  new MutationObserver(attach).observe(document.body, { childList: true, subtree: true });
 })();
+
