@@ -11,7 +11,8 @@
     },
     "content_scripts": [
         {
-            "matches": ["<all_urls>"], 
+            "matches": ["https://chatgpt.com/*",
+      "https://chat.openai.com/*"], 
             "js": ["contentScript.js"]
         }
     ]
