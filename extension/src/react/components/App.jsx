@@ -64,26 +64,25 @@ export default function PromptOptimizer() {
   // };
 
   const getSuggestion = async () => {
+    if (!prompt.trim()) return;
+  
     try {
-      const response = await fetch("http://localhost:3001/test", {
+      const response = await fetch("http://localhost:3001/evaluate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt })
       });
   
       const data = await response.json();
-  
       console.log("Response from backend:", data);
   
-      setSuggestions([
-        {
-          type: "Connection Test",
-          message: data.message,
-          improvement: `Backend received: ${data.receivedPrompt}`
-        }
-      ]);
+      // Map backend suggestions into frontend cards
+      const formattedSuggestions = data.suggestions.map(s => ({
+        type: s.component.charAt(0).toUpperCase() + s.component.slice(1),
+        message: s.suggestion
+      }));
+  
+      setSuggestions(formattedSuggestions);
   
     } catch (error) {
       console.error("Error connecting to backend:", error);
