@@ -105,7 +105,7 @@ export default function PromptOptimizer() {
       padding: "10px",
       background: "#edf7f1",
       borderRadius: "8px",
-      fontSize: "10px",
+      fontSize: "13px",
       color: "#344e41"
     },
     headerRow: {
@@ -188,7 +188,6 @@ export default function PromptOptimizer() {
             <div style={styles.successTitle}>Excellent Prompt</div>
             <div style={styles.successMessage}>
               Your prompt already includes the essential components for high-quality output. 
-              It’s clear, structured, and well-defined — no optimization needed.
             </div>
           </div>
         </div>

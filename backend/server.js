@@ -5,7 +5,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// --- 1️⃣ Define keyword arrays for prompt types
+// --- 1️ Define keyword arrays for prompt types
 // instruction categories → map to words that indicate that instruction 
 const promptTypes = {
     "summary": ["summarize", "condense", "abstract", "outline"],
@@ -15,15 +15,16 @@ const promptTypes = {
     "comparing": ["compare", "contrast", "differentiate", "distinguish", "identify similarities and differences"],
     "structuring": ["list", "format as a table", "outline", "structure", "enumerate"],
     "refining": ["rephrase", "rewrite", "reword", "edit", "refine", "expand"],
-    "instructions": ["act as *", "use * format", "constraint: *", "avoid", "include", "exclude", "focus on", "neglect"],
-    "methodology": ["step-by-step", "chain of thought", "explain your reasoning"],
+    "instructions": ["act as", "constraint: ", "avoid", "include", "exclude", "focus on", "neglect"],
+    "methodology": ["step-by-step", "chain of thought"],
     "research":["cite", "prove", "find","quantify","verify", "validate", "source", "reference", "investigate", "explore"]
 };
     
     
-    // --- 2️⃣ Define rules for each type – include local and global key aspect/ components
+    // --- 2️ Define rules for each type – include local and global key aspect/ components
     const rulesByType = {
-        "summary": ["format", "length", "scopeSumm", "tone", "contextSumm"],
+        "default": ["format", "length", "tone"],
+        "summary": ["format", "length", "scopeSumm", "tone"],
         "generate": ["format", "length", "scopeGen", "tone", "structureGen", "audience", "objectiveGen"],
         "analyzing": ["criteriaEval", "scaleEval", "scopeEval", "depthEval", "format"],
         "explaining": ["format", "length", "scopeExpl", "tone", "depthExpl", "audience", "clarityExpl"],
@@ -36,7 +37,7 @@ const promptTypes = {
       };
     
     
-    // --- 3️⃣ Define sample suggestions for each missing component
+    // --- 3️ Define sample suggestions for each missing component
     const suggestionsByComponent = {
     "format": [
     "Suggest format",
@@ -53,10 +54,6 @@ const promptTypes = {
     "tone": [
     "Include tone",
     "Specify the style or tone of the response: professional, casual, neutral, academic, formal, or informal."
-    ],
-    "contextSumm": [
-    "Clarify context",
-    "Decide whether to retain existing context or provide additional context to improve clarity."
     ],
     "scopeGen": [
     "Include scope",
@@ -99,7 +96,7 @@ const promptTypes = {
     "Indicate whether the explanation should be brief, moderate, or detailed."
     ],
     "clarityExpl": [
-    "Add clarity",
+    "Add clarity", "in a detailed manner",
     "Improve understanding by defining key terms, using examples, visual descriptions, or simplifying complex language."
     ],
     "scopeComp": [
@@ -149,7 +146,7 @@ const promptTypes = {
     };
     
     
-    // --- 4️⃣ Define keyword indicators for each global + local (scopeSummary→ keyaspect Category) component (highlighted in yellow) 
+    // --- 4️ Define keyword indicators for each global + local (scopeSummary→ keyaspect Category) component (highlighted in yellow) 
     const componentKeywords = {
         "format": [
             "list", "paragraph", "number",
@@ -159,7 +156,7 @@ const promptTypes = {
           "short sentences",
           "long sentences",
           "table",
-          "chart"
+          "chart", "essay", "outline",  "executive summary",
         ],
       
         "length": [
@@ -210,12 +207,7 @@ const promptTypes = {
           "formal",
           "informal"
         ],
-      
-        "contextSumm": [
-          "keep context",
-          "add new context"
-        ],
-      
+
         "scopeGen": [
           "main idea",
           "main topic",
@@ -226,10 +218,10 @@ const promptTypes = {
       
         "structureGen": [
           "problem", "solution",
-          "cause * effect",
-          "compare * contrast",
+          "cause", "effect",
+          "compare", "contrast",
           "chronological",
-          "question * answer"
+          "question", "answer"
         ],
       
         "audience": [
@@ -254,20 +246,20 @@ const promptTypes = {
       
         "criteriaEval": [
           "swot format",
-          "advantages * disadvantages",
+          "advantages", "disadvantages", "advantages and disadvantages",
           "pros",
           "cons",
           "risk level",
-          "opportunities * risks"
+          "opportunities", "risks"
         ],
       
         "scaleEval": [
           "numerical",
-          "poor * fair * good * excellent",
+          "poor", "fair", "good", "excellent",
           "percentage score",
-          "pass * fail",
+          "pass", "fail",
           "stars",
-          "out of *"
+          "out of"
         ],
       
         "scopeEval": [
@@ -284,7 +276,7 @@ const promptTypes = {
       
         "scopeExpl": [
           "main point",
-          "main point and supporting points",
+          "main point and supporting points", "supporting points",
           "why it matters",
           "how to use it",
           "cause and effect"
@@ -298,23 +290,23 @@ const promptTypes = {
       
         "clarityExpl": [
           "define key terms",
-          "use real-world examples",
-          "use visual descriptions",
-          "use simple terms"
+          "real-world examples",
+          "visual descriptions",
+          "simple terms"
         ],
       
         "scopeComp": [
           "pros and cons",
-          "general comparison",
-          "in depth comparison",
-          "similarities only",
-          "differences only",
+          "general",
+          "in depth",
+          "similarities",
+          "differences",
           "detailed section by section comparison"
         ],
       
         "criteriaComp": [
-          "good * bad",
-          "short * long term impacts",
+          "good", "bad",
+          "short term", "long term", "long", "short",
           "risks",
           "pros",
           "cons"
@@ -353,7 +345,7 @@ const promptTypes = {
       
         "scopeRef": [
           "include all content",
-          "key points only",
+          "key points",
           "key points and supporting details",
           "highlights key points",
           "exclude content",
@@ -378,10 +370,12 @@ const promptTypes = {
           "banking analyst",
           "researcher",
           "manager"
-        ], "citationFormat": [
-            "MLA",
-            "APA",
-            "Chicago",
+        ], 
+        
+        "citationFormat": [
+            "mla",
+            "apa",
+            "chicago",
             "reference type",
             "citation type",
             "book citation",
@@ -394,11 +388,11 @@ const promptTypes = {
           ],
         
           "sourceType": [
-            "primary articles",
-            "secondary articles",
+            "primary article",
+            "secondary article",
             "primary and secondary articles",
-            "books",
-            "journals",
+            "book",
+            "journal",
             "articles",
             "peer-reviewed journal articles",
             "research reports",
@@ -419,7 +413,7 @@ const promptTypes = {
             "books within the last",
             "journals within the last",
             "published in the last",
-            "articles from the last"
+            "articles from the last", "year"
           ]
         
       };
@@ -433,7 +427,7 @@ app.post("/evaluate", (req, res) => {
   const lowerPrompt = prompt.toLowerCase();
 
   // --- 5a: Detect prompt type
-  let detectedType = "general";
+  let detectedType = "default";
   for (const [type, keywords] of Object.entries(promptTypes)) {
     if (keywords.some(k => lowerPrompt.includes(k))) {
       detectedType = type;
