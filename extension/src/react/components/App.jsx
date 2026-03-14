@@ -5,11 +5,13 @@ export default function PromptOptimizer() {
   const [prompt, setPrompt] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [hasEvaluated, setHasEvaluated] = useState(false);
+  const [showAllSuggestions, setShowAllSuggestions] = useState(false);
   
   const getSuggestion = async () => {
     if (!prompt.trim()) return;
     setSuggestions([]);
     setHasEvaluated(true);
+    setShowAllSuggestions(false); // Reset to showing only three suggestions
     try {
       const response = await fetch("http://localhost:3001/evaluate", {
         method: "POST",
@@ -161,33 +163,48 @@ export default function PromptOptimizer() {
         onChange={(e) => {
           setPrompt(e.target.value);
           setHasEvaluated(false);
-          }
-        }
-        />
+        }}
+      />
 
       <button style={styles.button} onClick={getSuggestion}>
         Optimize Prompt
       </button>
 
       {suggestions.length > 0 ? (
-      <div style={styles.suggestionsContainer}>
-        <h2 style={styles.sectionTitle}>Suggestions</h2>
+        <div style={styles.suggestionsContainer}>
+          <h2 style={styles.sectionTitle}>Suggestions</h2>
 
-        {suggestions.map((s, index) => (
-          <div key={index} style={styles.card}>
-            <div style={styles.cardTitle}>{s.heading}</div>
-            <div style={styles.improvementBox}>
-              {s.description}
+          {(showAllSuggestions ? suggestions : suggestions.slice(0, 3)).map((s, index) => (
+            <div key={index} style={styles.card}>
+              <div style={styles.cardTitle}>{s.heading}</div>
+              <div style={styles.improvementBox}>{s.description}</div>
             </div>
-          </div>
           ))}
+
+          {!showAllSuggestions && suggestions.length > 3 && (
+            <button
+              style={{ ...styles.button, marginTop: "10px" }}
+              onClick={() => setShowAllSuggestions(true)}
+            >
+              Show more suggestions
+            </button>
+          )}
+
+          {showAllSuggestions && (
+            <button
+              style={{ ...styles.button, marginTop: "10px" }}
+              onClick={() => setShowAllSuggestions(false)}
+            >
+              Show fewer suggestions
+            </button>
+          )}
         </div>
       ) : hasEvaluated && (
         <div style={styles.successContainer}>
           <div style={styles.successCard}>
             <div style={styles.successTitle}>Excellent Prompt</div>
             <div style={styles.successMessage}>
-              Your prompt already includes the essential components for high-quality output. 
+              Your prompt already includes the essential components for high-quality output.
             </div>
           </div>
         </div>
