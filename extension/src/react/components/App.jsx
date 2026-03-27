@@ -6,6 +6,8 @@ export default function PromptOptimizer() {
   const [suggestions, setSuggestions] = useState([]);
   const [hasEvaluated, setHasEvaluated] = useState(false);
   const [showAllSuggestions, setShowAllSuggestions] = useState(false);
+
+  const [hoveredIndex, setHoveredIndex] = useState(null);
   
   const getSuggestion = async () => {
     if (!prompt.trim()) return;
@@ -141,6 +143,53 @@ export default function PromptOptimizer() {
         fontSize: "14px",
         color: "#2d6a4f",
         lineHeight: "1.5"
+      },
+      // for question mark hover
+      tooltipIcon: {
+        marginLeft: "8px",
+        cursor: "pointer",
+        background: "#d8f3dc",
+        color: "#1b4332",
+        borderRadius: "50%",
+        width: "18px",
+        height: "18px",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "12px",
+        fontWeight: "700"
+      },
+      tooltipBox: {
+        position: "absolute",
+        background: "#1b4332",
+        color: "white",
+        padding: "8px 10px",
+        borderRadius: "6px",
+        fontSize: "12px",
+        marginTop: "6px",
+        maxWidth: "220px",
+        zIndex: 999
+      },
+      cardHeader: {
+        display: "flex",
+        alignItems: "center",
+        position: "relative"
+      }, 
+      // dropdown
+      toggleButton: {
+        background: "transparent",
+        color: "#40916c",
+        border: "none",
+        fontSize: "12px",
+        cursor: "pointer",
+        fontWeight: "500",
+        padding: "4px 6px"
+      }, 
+      sectionHeaderRow: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: "12px"
       }
   };
 
@@ -172,32 +221,49 @@ export default function PromptOptimizer() {
 
       {suggestions.length > 0 ? (
         <div style={styles.suggestionsContainer}>
+          <div style={styles.sectionHeaderRow}>
           <h2 style={styles.sectionTitle}>Suggestions</h2>
-
-          {(showAllSuggestions ? suggestions : suggestions.slice(0, 3)).map((s, index) => (
-            <div key={index} style={styles.card}>
-              <div style={styles.cardTitle}>{s.heading}</div>
-              <div style={styles.improvementBox}>{s.description}</div>
-            </div>
-          ))}
-
           {!showAllSuggestions && suggestions.length > 3 && (
             <button
-              style={{ ...styles.button, marginTop: "10px" }}
+              //style={{ ...styles.button, marginTop: "10px" }}
+              style={styles.toggleButton}
               onClick={() => setShowAllSuggestions(true)}
             >
-              Show more suggestions
+            ▼
             </button>
           )}
 
           {showAllSuggestions && (
             <button
-              style={{ ...styles.button, marginTop: "10px" }}
+              //style={{ ...styles.button, marginTop: "10px" }}
+              style={styles.toggleButton}
               onClick={() => setShowAllSuggestions(false)}
             >
-              Show fewer suggestions
+              ▲
             </button>
           )}
+           </div>
+          {(showAllSuggestions ? suggestions : suggestions.slice(0, 3)).map((s, index) => (
+            <div key={index} style={styles.card}>
+              <div style={styles.cardHeader}>
+              <div style={styles.cardTitle}>{s.heading}</div>
+
+              <div
+                style={styles.tooltipWrapper}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+              >
+                <div style={styles.tooltipIcon}>?</div>
+
+                {hoveredIndex === index && (
+                  <div style={styles.tooltipBox}>
+                    {s.description}
+                  </div>
+                )}
+              </div>
+            </div>
+            </div>
+          ))}
         </div>
       ) : hasEvaluated && (
         <div style={styles.successContainer}>
