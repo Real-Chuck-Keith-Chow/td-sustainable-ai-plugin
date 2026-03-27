@@ -8,35 +8,46 @@ export default function PromptOptimizer() {
   const [showAllSuggestions, setShowAllSuggestions] = useState(false);
 
   const [hoveredIndex, setHoveredIndex] = useState(null);
+
+  const applySuggestion = (optionValue) => {
+    // Append the selected suggestion to the current prompt
+    const newPrompt = prompt.trim() + " " + optionValue;
+    setPrompt(newPrompt);
+    setHasEvaluated(false);
+    getSuggestion(newPrompt); // pass the new prompt
   
-  const getSuggestion = async () => {
-    if (!prompt.trim()) return;
-    setSuggestions([]);
-    setHasEvaluated(true);
-    setShowAllSuggestions(false); // Reset to showing only three suggestions
+  };
+  const getSuggestion = async (currentPrompt) => {
+    const promptToUse = String(currentPrompt ?? prompt); // use passed prompt if available
+
+    if (!promptToUse.trim()) return;
+  
+  
+  
     try {
       const response = await fetch("http://localhost:3001/evaluate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({ prompt: promptToUse })
       });
   
       const data = await response.json();
-      console.log("Response from backend:", data);
-  
-      // Map backend suggestions into frontend cards
       const formattedSuggestions = data.suggestions.map(s => ({
         component: s.component,
         heading: s.heading,
-        description: s.description
+        description: s.description,
+        options: s.options || []
       }));
-  
       setSuggestions(formattedSuggestions);
+      setHasEvaluated(true);
+      setShowAllSuggestions(false);
+ 
   
     } catch (error) {
       console.error("Error connecting to backend:", error);
     }
   };
+
   const styles = {
     container: {
       maxWidth: "1200px", // wider
@@ -215,7 +226,7 @@ export default function PromptOptimizer() {
         }}
       />
 
-      <button style={styles.button} onClick={getSuggestion}>
+      <button style={styles.button} onClick={() => getSuggestion(prompt)}>
         Optimize Prompt
       </button>
 
@@ -262,6 +273,20 @@ export default function PromptOptimizer() {
                 )}
               </div>
             </div>
+            {/* Render suggestion options if available */}
+            {s.options && s.options.length > 0 && (
+                  <div style={styles.improvementBox}>
+                    {s.options.slice(0, 7).map((opt, i) => (
+                      <button
+                        key={i}
+                        style={{ ...styles.button, fontSize: "12px", padding: "4px 8px", margin: "3px" }}
+                        onClick={() => applySuggestion(opt.value)}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                  )}
             </div>
           ))}
         </div>
