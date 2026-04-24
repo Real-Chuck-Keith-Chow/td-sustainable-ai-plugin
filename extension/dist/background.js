@@ -1,1 +1,1 @@
-(()=>{"use strict";Lol})();
+(()=>{"use strict";chrome.runtime.onInstalled.addListener(function(){chrome.sidePanel.setPanelBehavior({openPanelOnActionClick:!0})}),chrome.action.onClicked.addListener(function(e){chrome.sidePanel.open({tabId:e.id})})})();
