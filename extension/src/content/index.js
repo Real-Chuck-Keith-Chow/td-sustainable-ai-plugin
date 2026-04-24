@@ -1,5 +1,5 @@
 (() => {
-  const LOG = "✅ ecoprompt";
+  const LOG = "ecoprompt";
   console.log(`${LOG} running (prompt detector loaded)`);
 
   const getTextarea = () => document.querySelector("textarea");
